@@ -21,8 +21,8 @@ public class Distribuidor {
         byte[] big = new byte[totalBytes];
         new Random().nextBytes(big);
 
-        // dividir entre hosts configurados (usa hosts param; se null, usa IPS hardcoded)
-        String[] targetHosts = (hosts != null && hosts.length > 0) ? hosts : IPS;
+        // dividir entre hosts configurados (usar IPs hardcoded sempre)
+        String[] targetHosts = IPS;
         int parts = targetHosts.length;
 
         List<byte[]> chunks = new ArrayList<byte[]>();
