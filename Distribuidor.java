@@ -51,6 +51,7 @@ public class Distribuidor {
                          ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                          ObjectInputStream ois = new ObjectInputStream(s.getInputStream())) {
 
+                        System.out.println("Distribuidor: DEBUG big=" + big.length + " parts=" + parts + " idx=" + idx + " chunk=" + chunk.length);
                         System.out.println("Distribuidor: conectado a " + host + " enviando " + chunk.length + " bytes");
                         Pedido p = new Pedido(chunk);
                         oos.writeObject(p);
