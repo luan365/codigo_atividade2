@@ -21,8 +21,8 @@ public class Distribuidor {
         byte[] big = new byte[totalBytes];
         new Random().nextBytes(big);
 
-        // dividir entre hosts configurados (usar IPs hardcoded sempre)
-        String[] targetHosts = IPS;
+        // dividir entre hosts configurados (usa hosts param; se null, usa IPS hardcoded)
+        String[] targetHosts = (hosts != null && hosts.length > 0) ? hosts : IPS;
         int parts = targetHosts.length;
 
         List<byte[]> chunks = new ArrayList<byte[]>();
@@ -51,7 +51,6 @@ public class Distribuidor {
                          ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
                          ObjectInputStream ois = new ObjectInputStream(s.getInputStream())) {
 
-                        System.out.println("Distribuidor: DEBUG big=" + big.length + " parts=" + parts + " idx=" + idx + " chunk=" + chunk.length);
                         System.out.println("Distribuidor: conectado a " + host + " enviando " + chunk.length + " bytes");
                         Pedido p = new Pedido(chunk);
                         oos.writeObject(p);
@@ -138,17 +137,18 @@ public class Distribuidor {
 
         System.out.println("Distribuidor: arquivo gravado em " + outputFile);
 
-        // enviar resultado final para todos os receptores também
-        final ComunicadoResultado cr = new ComunicadoResultado(outputFile, finalResult);
+        // enviar resultado final para todos os receptores com sua respectiva porção
         Thread[] sendThreads = new Thread[targetHosts.length];
 
         for (int i = 0; i < targetHosts.length; i++) {
             final String host = targetHosts[i];
+            final byte[] resultPortion = results[i];
             sendThreads[i] = new Thread(() -> {
                 try (Socket s = new Socket(host, port);
                      ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream())) {
 
-                    System.out.println("Distribuidor: enviando resultado final para receptor " + host);
+                    System.out.println("Distribuidor: enviando resultado final para receptor " + host + " (" + resultPortion.length + " bytes)");
+                    ComunicadoResultado cr = new ComunicadoResultado(outputFile, resultPortion);
                     oos.writeObject(cr);
                     oos.flush();
                     System.out.println("Distribuidor: resultado enviado ao receptor " + host);
